@@ -2,10 +2,14 @@
 #define ESPWEBSERVER_H
 
 #include <functional>
+#include <string>
 
 #include <Arduino.h>
 
 #include <HTTPServer.hpp>
+#include <HTTPRequest.hpp>
+#include <HTTPResponse.hpp>
+#include <HTTPSCallbackFunction.hpp>
 
 #include "HTTP_Method.h"
 
@@ -17,6 +21,8 @@ enum HTTPAuthMethod { BASIC_AUTH, /* DIGEST_AUTH */ };
 #ifndef HTTP_UPLOAD_BUFLEN
 #define HTTP_UPLOAD_BUFLEN 1436
 #endif
+
+typedef std::function<void(void)> THandlerFunction;
 
 typedef struct {
   HTTPUploadStatus status;
@@ -31,6 +37,8 @@ typedef struct {
 namespace fs {
 class FS;
 }
+
+class ESPWebServerNode;
 
 class ESPWebServer
 {
@@ -48,7 +56,6 @@ public:
   bool authenticate(const char * username, const char * password);
   void requestAuthentication(HTTPAuthMethod mode = BASIC_AUTH, const char* realm = NULL, const String& authFailMsg = String("") );
 
-  typedef std::function<void(void)> THandlerFunction;
   void on(const String &uri, THandlerFunction handler);
   void on(const String &uri, HTTPMethod method, THandlerFunction fn);
   void on(const String &uri, HTTPMethod method, THandlerFunction fn, THandlerFunction ufn);
@@ -99,8 +106,36 @@ public:
   //template<typename T> size_t streamFile(T &file, const String& contentType);
 
 protected:
-  httpsserver::HTTPServer *_server;
+  friend class ESPWebServerNode;
+
+  /** The wrapper function that maps on() calls */
+  static void _handlerWrapper(httpsserver::HTTPRequest *req, httpsserver::HTTPResponse *res);
+
+  /** The backing server instance */
+  httpsserver::HTTPServer _server;
+
+  /** The currently active request */
+  httpsserver::HTTPRequest *_activeRequest;
+  httpsserver::HTTPResponse *_activeResponse;
+
+  /** default node */
+  ESPWebServerNode *_notFoundNode;
 };
 
+class ESPWebServerNode : public httpsserver::ResourceNode {
+public:
+  ESPWebServerNode(
+    ESPWebServer *server,
+    const std::string &path,
+    const std::string &method,
+    const THandlerFunction &handler,
+    const std::string &tag = "");
+  virtual ~ESPWebServerNode();
+
+protected:
+  friend class ESPWebServer;
+  ESPWebServer *_wrapper;
+  const THandlerFunction _wrappedHandler;
+};
 
 #endif //ESPWEBSERVER_H

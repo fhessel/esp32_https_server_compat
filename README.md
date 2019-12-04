@@ -24,10 +24,9 @@ Download this library from the [releases tab](https://github.com/fhessel/esp32_h
 The library can be used in the same way as the default WebServer library, with the only difference that you need to include `ESPWebServer.hpp` instead of `WebServer.h`:
 
 ```c++
-
 #include <ESPWebServer.hpp>
 
-ESPWebserver server = ESPWebServer(80);
+ESPWebserver server(80);
 
 void setup() {
   server.begin();
@@ -47,10 +46,10 @@ This wrapper is still very WIP.
 | Function | State | Comment |
 | -------- | ----- | ------- |
 | Starting and stopping the server | ✅ | (but not tested) |
-| Handling basic requests | ❌ | `on(...)` |
-| Handling 404 | ❌ | `onNotFound(...)` |
-| Providing access to request properties | ❌ | `uri()`, `method()` |
-| Handling file uploads | ❌ | `onFileUpload(...)` and `upload()` |
+| Handling basic requests | ✅ | `on(...)` |
+| Handling 404 | ✅ | `onNotFound(...)` |
+| Providing access to request properties | ✅ | `uri()`, `method()` |
+| Handling file uploads | ❌ | `onFileUpload(...)`, `upload()`, and `on()` with 4 parameters |
 | Handling headers | ❌ | `header()`, `headerName()`, `headers()` etc. |
 | Handling arguments | ❌ | `arg()`, `argName()`, `hasArg()` etc. |
 | Handling forms | ❌ | Needs [esp32_https_server#29](https://github.com/fhessel/esp32_https_server/issues/29) first. |
