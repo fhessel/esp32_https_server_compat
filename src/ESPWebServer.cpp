@@ -65,8 +65,8 @@ void ESPWebServer::on(const String &uri, THandlerFunction handler) {
 
 void ESPWebServer::on(const String &uri, HTTPMethod method, THandlerFunction fn) {
   // TODO: Handle HTTP_ANY
-  char *methodname = METHODNAMES[0].text;
-  for (size_t n = 1; n < sizeof(METHODNAMES); n++) {
+  char *methodname = "???";
+  for (size_t n = 0; n < sizeof(METHODNAMES); n++) {
     if (METHODNAMES[n].val == method) {
       methodname = METHODNAMES[n].text;
       break;
