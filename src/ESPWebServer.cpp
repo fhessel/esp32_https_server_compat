@@ -45,6 +45,7 @@ void ESPWebServer::handleClient() {
 
 void ESPWebServer::close() {
   // TODO
+  HTTPS_LOGE("close() not yet implemented");
 }
 
 void ESPWebServer::stop() {
@@ -52,11 +53,13 @@ void ESPWebServer::stop() {
 }
 
 bool ESPWebServer::authenticate(const char * username, const char * password) {
+  HTTPS_LOGE("authenticate() not yet implemented");
   return false;
 }
 
 void ESPWebServer::requestAuthentication(HTTPAuthMethod mode, const char* realm, const String& authFailMsg) {
   // TODO
+  HTTPS_LOGE("requestAuthentication() not yet implemented");
 }
 
 void ESPWebServer::on(const String &uri, THandlerFunction handler) {
@@ -79,10 +82,12 @@ void ESPWebServer::on(const String &uri, HTTPMethod method, THandlerFunction fn)
 void ESPWebServer::on(const String &uri, HTTPMethod method, THandlerFunction fn, THandlerFunction ufn) {
   // TODO
   // ufn handles uploads
+  HTTPS_LOGE("on() for upload not yet implemented");
 }
 
 void ESPWebServer::serveStatic(const char* uri, fs::FS& fs, const char* path, const char* cache_header) {
   // TODO
+  HTTPS_LOGE("serveStatic() not yet implemented");
 }
 
 void ESPWebServer::onNotFound(THandlerFunction fn) {
@@ -95,6 +100,7 @@ void ESPWebServer::onNotFound(THandlerFunction fn) {
 
 void ESPWebServer::onFileUpload(THandlerFunction fn) {
   // TODO
+  HTTPS_LOGE("onFileUpload() not yet implemented");
 }
 
 String ESPWebServer::uri() {
@@ -113,70 +119,94 @@ HTTPMethod ESPWebServer::method() {
 HTTPUpload& ESPWebServer::upload() {
   // TODO
   HTTPUpload upload;
+  HTTPS_LOGE("upload() not yet implemented");
   return upload;
 }
 
 String ESPWebServer::pathArg(unsigned int i) {
   // TODO
+  HTTPS_LOGE("pathArg() not yet implemented");
   return "";
 }
 
 String ESPWebServer::arg(String name) {
-  // TODO
-  return "";
+  if (!_activeRequest) {
+  	HTTPS_LOGE("arg() called but no _activeRequest");
+  	return "";
+  }
+  ResourceParameters *params = _activeRequest->getParams();
+  std::string value = params->getRequestParameter(std::string(name.c_str()));
+  HTTPS_LOGD("arg(%s) returns %s", name.c_str(), value.c_str());
+  return String(value.c_str());
 }
 
 String ESPWebServer::arg(int i) {
   // TODO
+  HTTPS_LOGE("arg(int) not yet implemented");
   return "";
 }
 
 String ESPWebServer::argName(int i) {
   // TODO
+  HTTPS_LOGE("argName() not yet implemented");
   return "";
 }
 
 int ESPWebServer::args() {
   // TODO
+  HTTPS_LOGE("args() not yet implemented");
   return 0;
 }
 
 bool ESPWebServer::hasArg(String name) {
-  // TODO
-  return false;
+  if (!_activeRequest) {
+  	HTTPS_LOGE("hasArg() called but no _activeRequest");
+  	return false;
+  }
+  ResourceParameters *params = _activeRequest->getParams();
+  bool rv = params->isRequestParameterSet(std::string(name.c_str()));
+  HTTPS_LOGD("hasArg(%s) returns %d", name.c_str(), (int)rv);
+  return rv;
 }
 
 void ESPWebServer::collectHeaders(const char* headerKeys[], const size_t headerKeysCount) {
   // TODO
+  HTTPS_LOGE("collectHeaders() not yet implemented");
 }
 
 String ESPWebServer::header(String name) {
   // TODO
+  HTTPS_LOGE("header(String) not yet implemented");
   return "";
 }
 
 String ESPWebServer::header(int i) {
   // TODO
+  HTTPS_LOGE("header(int) not yet implemented");
   return "";
 }
 
 String ESPWebServer::headerName(int i) {
   // TODO
+  HTTPS_LOGE("headerName() not yet implemented");
   return "";
 }
 
 int ESPWebServer::headers() {
   // TODO
+  HTTPS_LOGE("headers() not yet implemented");
   return 0;
 }
 
 bool ESPWebServer::hasHeader(String name) {
   // TODO
+  HTTPS_LOGE("hasHeader() not yet implemented");
   return false;
 }
 
 String ESPWebServer::hostHeader() {
   // TODO
+  HTTPS_LOGE("hostHeader() not yet implemented");
   return "";
 }
 
@@ -196,42 +226,52 @@ void ESPWebServer::send(int code, const String& content_type, const String& cont
 
 void ESPWebServer::send_P(int code, PGM_P content_type, PGM_P content) {
   // TODO
+  HTTPS_LOGE("send_P() not yet implemented");
 }
 
 void ESPWebServer::send_P(int code, PGM_P content_type, PGM_P content, size_t contentLength) {
   // TODO
+  HTTPS_LOGE("send_P() not yet implemented");
 }
 
 void ESPWebServer::enableCORS(boolean value) {
   // TODO
+  HTTPS_LOGE("enableCORS() not yet implemented");
 }
 
 void ESPWebServer::enableCrossOrigin(boolean value) {
   // TODO
+  HTTPS_LOGE("enableCrossOrigin() not yet implemented");
 }
 
 void ESPWebServer::setContentLength(const size_t contentLength) {
   // TODO
+  HTTPS_LOGE("setContentLength() not yet implemented");
 }
 
 void ESPWebServer::sendHeader(const String& name, const String& value, bool first) {
   // TODO
+  HTTPS_LOGE("sendHeader() not yet implemented");
 }
 
 void ESPWebServer::sendContent(const String& content) {
   // TODO
+  HTTPS_LOGE("sendContent() not yet implemented");
 }
 
 void ESPWebServer::sendContent_P(PGM_P content) {
   // TODO
+  HTTPS_LOGE("sendContent_P() not yet implemented");
 }
 
 void ESPWebServer::sendContent_P(PGM_P content, size_t size) {
   // TODO
+  HTTPS_LOGE("sendContent_P() not yet implemented");
 }
 
 String ESPWebServer::urlDecode(const String& text) {
   // TODO
+  HTTPS_LOGE("urlDecode() not yet implemented");
   return text;
 }
 
