@@ -68,7 +68,7 @@ void ESPWebServer::on(const String &uri, THandlerFunction handler) {
 
 void ESPWebServer::on(const String &uri, HTTPMethod method, THandlerFunction fn) {
   // TODO: Handle HTTP_ANY
-  char *methodname = "???";
+  const char *methodname = "???";
   for (size_t n = 0; n < sizeof(METHODNAMES); n++) {
     if (METHODNAMES[n].val == method) {
       methodname = METHODNAMES[n].text;
@@ -118,7 +118,7 @@ HTTPMethod ESPWebServer::method() {
 
 HTTPUpload& ESPWebServer::upload() {
   // TODO
-  HTTPUpload upload;
+  static HTTPUpload upload;
   HTTPS_LOGE("upload() not yet implemented");
   return upload;
 }
@@ -225,13 +225,17 @@ void ESPWebServer::send(int code, const String& content_type, const String& cont
 }
 
 void ESPWebServer::send_P(int code, PGM_P content_type, PGM_P content) {
-  // TODO
-  HTTPS_LOGE("send_P() not yet implemented");
+  _activeResponse->setStatusCode(code);
+  String memContentType(FPSTR(content_type));
+  _activeResponse->setHeader("Content-Type", memContentType.c_str());
+  _activeResponse->print(FPSTR(content));
 }
 
 void ESPWebServer::send_P(int code, PGM_P content_type, PGM_P content, size_t contentLength) {
-  // TODO
-  HTTPS_LOGE("send_P() not yet implemented");
+  _activeResponse->setStatusCode(code);
+  String memContentType(FPSTR(content_type));
+  _activeResponse->setHeader("Content-Type", memContentType.c_str());
+  _activeResponse->write((const uint8_t *)content, contentLength);
 }
 
 void ESPWebServer::enableCORS(boolean value) {
@@ -250,23 +254,22 @@ void ESPWebServer::setContentLength(const size_t contentLength) {
 }
 
 void ESPWebServer::sendHeader(const String& name, const String& value, bool first) {
-  // TODO
-  HTTPS_LOGE("sendHeader() not yet implemented");
+  if (first) {
+    HTTPS_LOGW("sendHeader(..., first=true) not implemented");
+  }
+  _activeResponse->setHeader(name.c_str(), value.c_str());
 }
 
 void ESPWebServer::sendContent(const String& content) {
-  // TODO
-  HTTPS_LOGE("sendContent() not yet implemented");
+  _activeResponse->print(content);
 }
 
 void ESPWebServer::sendContent_P(PGM_P content) {
-  // TODO
-  HTTPS_LOGE("sendContent_P() not yet implemented");
+  _activeResponse->print(FPSTR(content));
 }
 
 void ESPWebServer::sendContent_P(PGM_P content, size_t size) {
-  // TODO
-  HTTPS_LOGE("sendContent_P() not yet implemented");
+  _activeResponse->write((const uint8_t *)content, size);
 }
 
 String ESPWebServer::urlDecode(const String& text) {
