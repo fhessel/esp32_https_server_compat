@@ -5,6 +5,7 @@
 #include <string>
 
 #include <Arduino.h>
+#include <FS.h>
 
 #include <HTTPServer.hpp>
 #include <HTTPRequest.hpp>
@@ -145,6 +146,27 @@ protected:
   friend class ESPWebServer;
   ESPWebServer *_wrapper;
   const THandlerFunction _wrappedHandler;
+};
+
+class ESPWebServerStaticNode : public httpsserver::ResourceNode {
+public:
+  ESPWebServerStaticNode(
+    ESPWebServer *server,
+    const std::string &path,
+    FS& fs,
+    const char *filePath,
+    const char *cache_header);
+  virtual ~ESPWebServerStaticNode();
+
+protected:
+  static void _handlerWrapper(httpsserver::HTTPRequest *req, httpsserver::HTTPResponse *res);
+  void _handler(httpsserver::HTTPRequest *req, httpsserver::HTTPResponse *res);
+  friend class ESPWebServer;
+  ESPWebServer *_wrapper;
+  FS& _fs;
+  const char *_filePath;
+  const char *_cache_header;
+  bool _isFile;
 };
 
 #endif //ESPWEBSERVER_H

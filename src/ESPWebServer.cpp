@@ -95,8 +95,8 @@ void ESPWebServer::on(const String &uri, HTTPMethod method, THandlerFunction fn,
 }
 
 void ESPWebServer::serveStatic(const char* uri, fs::FS& fs, const char* path, const char* cache_header) {
-  // TODO
-  HTTPS_LOGE("serveStatic() not yet implemented");
+  ESPWebServerStaticNode *node = new ESPWebServerStaticNode(this, std::string(path), fs, path, cache_header);
+  _server.registerNode(node);
 }
 
 void ESPWebServer::onNotFound(THandlerFunction fn) {
@@ -323,3 +323,33 @@ ESPWebServerNode::ESPWebServerNode(
 ESPWebServerNode::~ESPWebServerNode() {
 
 }
+
+ESPWebServerStaticNode::ESPWebServerStaticNode(
+  ESPWebServer *server,
+  const std::string &path,
+  FS& fs,
+  const char *filePath,
+  const char *cache_header)
+: ResourceNode(path, "GET", &(ESPWebServerStaticNode::_handlerWrapper), ""),
+  _fs(fs),
+  _filePath(filePath),
+  _cache_header(cache_header),
+  _isFile(false)
+{
+  _isFile = _fs.exists(filePath);
+}
+
+void ESPWebServerStaticNode::_handler(httpsserver::HTTPRequest *req, httpsserver::HTTPResponse *res) {
+  HTTPS_LOGE("static not yet implemented path=%s filePath=%s\n", _path.c_str(), _filePath);
+}
+
+void ESPWebServerStaticNode::_handlerWrapper(httpsserver::HTTPRequest *req, httpsserver::HTTPResponse *res) {
+  ESPWebServerStaticNode *node = (ESPWebServerStaticNode*)req->getResolvedNode();
+  node->_handler(req, res);
+}
+
+
+ESPWebServerStaticNode::~ESPWebServerStaticNode() {
+
+}
+
