@@ -133,10 +133,6 @@ String ESPWebServer::pathArg(unsigned int i) {
 }
 
 String ESPWebServer::arg(String name) {
-  if (!_activeRequest) {
-  	HTTPS_LOGE("arg() called but no _activeRequest");
-  	return "";
-  }
   ResourceParameters *params = _activeRequest->getParams();
   std::string value;
   params->getQueryParameter(std::string(name.c_str()), value);
@@ -163,10 +159,6 @@ int ESPWebServer::args() {
 }
 
 bool ESPWebServer::hasArg(String name) {
-  if (!_activeRequest) {
-  	HTTPS_LOGE("hasArg() called but no _activeRequest");
-  	return false;
-  }
   ResourceParameters *params = _activeRequest->getParams();
   bool rv = params->isQueryParameterSet(std::string(name.c_str()));
   HTTPS_LOGD("hasArg(%s) returns %d", name.c_str(), (int)rv);
