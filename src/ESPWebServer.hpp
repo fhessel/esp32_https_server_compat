@@ -22,6 +22,9 @@ enum HTTPAuthMethod { BASIC_AUTH, /* DIGEST_AUTH */ };
 #define HTTP_UPLOAD_BUFLEN 1436
 #endif
 
+#define CONTENT_LENGTH_UNKNOWN ((size_t) -1)
+#define CONTENT_LENGTH_NOT_SET ((size_t) -2)
+
 typedef std::function<void(void)> THandlerFunction;
 
 typedef struct {
@@ -111,6 +114,9 @@ protected:
   /** The wrapper function that maps on() calls */
   static void _handlerWrapper(httpsserver::HTTPRequest *req, httpsserver::HTTPResponse *res);
 
+  /** Add standard headers */
+  void _standardHeaders();
+
   /** The backing server instance */
   httpsserver::HTTPServer _server;
 
@@ -120,6 +126,10 @@ protected:
 
   /** default node */
   ESPWebServerNode *_notFoundNode;
+
+  /** Instance variables for standard headers */
+  bool _corsEnabled;
+  size_t _contentLength;
 };
 
 class ESPWebServerNode : public httpsserver::ResourceNode {

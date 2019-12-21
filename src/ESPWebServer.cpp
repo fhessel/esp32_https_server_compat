@@ -1,5 +1,6 @@
 
 #include "ESPWebServer.hpp"
+#include <string>
 
 using namespace httpsserver;
 
@@ -20,7 +21,10 @@ struct {
 };
 
 ESPWebServer::ESPWebServer(IPAddress addr, int port) :
-  _server(HTTPServer(port, 4, addr)) {
+  _server(HTTPServer(port, 4, addr)),
+  _corsEnabled(false),
+  _contentLength(0)
+{
   _notFoundNode = nullptr;
 }
 
@@ -211,8 +215,10 @@ String ESPWebServer::hostHeader() {
 }
 
 void ESPWebServer::send(int code, const char* content_type, const String& content) {
+  _contentLength = content.length();
   _activeResponse->setStatusCode(code);
   _activeResponse->setHeader("Content-Type", content_type);
+  _standardHeaders();
   _activeResponse->print(content);
 }
 
@@ -225,32 +231,40 @@ void ESPWebServer::send(int code, const String& content_type, const String& cont
 }
 
 void ESPWebServer::send_P(int code, PGM_P content_type, PGM_P content) {
+  _contentLength = strlen_P(content);
   _activeResponse->setStatusCode(code);
   String memContentType(FPSTR(content_type));
   _activeResponse->setHeader("Content-Type", memContentType.c_str());
+  _standardHeaders();
   _activeResponse->print(FPSTR(content));
 }
 
 void ESPWebServer::send_P(int code, PGM_P content_type, PGM_P content, size_t contentLength) {
+  _contentLength = contentLength;
   _activeResponse->setStatusCode(code);
   String memContentType(FPSTR(content_type));
   _activeResponse->setHeader("Content-Type", memContentType.c_str());
+  _standardHeaders();
   _activeResponse->write((const uint8_t *)content, contentLength);
 }
 
+void ESPWebServer::_standardHeaders() {
+  if (_corsEnabled) _activeResponse->setHeader("Access-Control-Allow-Origin", "*");
+  if (_contentLength != CONTENT_LENGTH_NOT_SET && _contentLength != CONTENT_LENGTH_UNKNOWN) {
+    _activeResponse->setHeader("Content-Length", String(_contentLength).c_str());
+  }
+}
+
 void ESPWebServer::enableCORS(boolean value) {
-  // TODO
-  HTTPS_LOGE("enableCORS() not yet implemented");
+  _corsEnabled = value;
 }
 
 void ESPWebServer::enableCrossOrigin(boolean value) {
-  // TODO
-  HTTPS_LOGE("enableCrossOrigin() not yet implemented");
+  _corsEnabled = value;
 }
 
 void ESPWebServer::setContentLength(const size_t contentLength) {
-  // TODO
-  HTTPS_LOGE("setContentLength() not yet implemented");
+  _contentLength = contentLength;
 }
 
 void ESPWebServer::sendHeader(const String& name, const String& value, bool first) {
@@ -284,6 +298,7 @@ void ESPWebServer::_handlerWrapper(
   ESPWebServerNode *node = (ESPWebServerNode*)req->getResolvedNode();
   node->_wrapper->_activeRequest = req;
   node->_wrapper->_activeResponse = res;
+  node->_wrapper->_contentLength = CONTENT_LENGTH_NOT_SET;
   node->_wrappedHandler();
   node->_wrapper->_activeRequest = nullptr;
   node->_wrapper->_activeResponse = nullptr;
