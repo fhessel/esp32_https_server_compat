@@ -81,6 +81,7 @@ void ESPWebServer::on(const String &uri, HTTPMethod method, THandlerFunction fn)
 
 void ESPWebServer::on(const String &uri, HTTPMethod method, THandlerFunction fn, THandlerFunction ufn) {
   // TODO: Handle HTTP_ANY
+  // TODO: convert {} in uri to * (so pathArg() will work)
   const char *methodname = "???";
   for (size_t n = 0; n < sizeof(METHODNAMES); n++) {
     if (METHODNAMES[n].val == method) {
@@ -93,6 +94,7 @@ void ESPWebServer::on(const String &uri, HTTPMethod method, THandlerFunction fn,
 }
 
 void ESPWebServer::serveStatic(const char* uri, fs::FS& fs, const char* path, const char* cache_header) {
+  // TODO: add * or something to path so serveStatic("/dir/",...) will serve all content from that directory
   ESPWebServerStaticNode *node = new ESPWebServerStaticNode(this, std::string(path), fs, path, cache_header);
   _server.registerNode(node);
 }
@@ -127,9 +129,9 @@ HTTPUpload& ESPWebServer::upload() {
 }
 
 String ESPWebServer::pathArg(unsigned int i) {
-  // TODO
-  HTTPS_LOGE("pathArg() not yet implemented");
-  return "";
+  ResourceParameters *params = _activeRequest->getParams();
+  auto rv = params->getPathParameter(i);
+  return String(rv.c_str());
 }
 
 String ESPWebServer::arg(String name) {
@@ -173,44 +175,52 @@ bool ESPWebServer::hasArg(String name) {
 }
 
 void ESPWebServer::collectHeaders(const char* headerKeys[], const size_t headerKeysCount) {
-  // TODO
-  HTTPS_LOGE("collectHeaders() not yet implemented");
+  HTTPS_LOGW("collectHeaders() not implemented, but probably not needed");
 }
 
 String ESPWebServer::header(String name) {
-  // TODO
-  HTTPS_LOGE("header(String) not yet implemented");
+  HTTPHeaders* headers = _activeRequest->getHTTPHeaders();
+  HTTPHeader* header = headers->get(std::string(name.c_str()));
+  if (header) {
+    return String(header->_value.c_str());
+  }
   return "";
 }
 
 String ESPWebServer::header(int i) {
-  // TODO
-  HTTPS_LOGE("header(int) not yet implemented");
+  HTTPHeaders* headers = _activeRequest->getHTTPHeaders();
+  auto allHeaders = headers->getAll();
+  if (i >= 0 && i < allHeaders->size()) {
+    HTTPHeader* header = allHeaders->at(i);
+    return String(header->_value.c_str());
+  }
   return "";
 }
 
 String ESPWebServer::headerName(int i) {
-  // TODO
-  HTTPS_LOGE("headerName() not yet implemented");
+  HTTPHeaders* headers = _activeRequest->getHTTPHeaders();
+  auto allHeaders = headers->getAll();
+  if (i >= 0 && i < allHeaders->size()) {
+    HTTPHeader* header = allHeaders->at(i);
+    return String(header->_name.c_str());
+  }
   return "";
 }
 
 int ESPWebServer::headers() {
-  // TODO
-  HTTPS_LOGE("headers() not yet implemented");
-  return 0;
+  HTTPHeaders* headers = _activeRequest->getHTTPHeaders();
+  auto allHeaders = headers->getAll();
+  return allHeaders->size();
 }
 
 bool ESPWebServer::hasHeader(String name) {
-  // TODO
-  HTTPS_LOGE("hasHeader() not yet implemented");
-  return false;
+  HTTPHeaders* headers = _activeRequest->getHTTPHeaders();
+  HTTPHeader* header = headers->get(std::string(name.c_str()));
+  return header != NULL;
 }
 
 String ESPWebServer::hostHeader() {
-  // TODO
-  HTTPS_LOGE("hostHeader() not yet implemented");
-  return "";
+  return header("Host");
 }
 
 void ESPWebServer::send(int code, const char* content_type, const String& content) {
@@ -285,9 +295,8 @@ void ESPWebServer::sendContent_P(PGM_P content, size_t size) {
 }
 
 String ESPWebServer::urlDecode(const String& text) {
-  // TODO
-  HTTPS_LOGE("urlDecode() not yet implemented");
-  return text;
+  auto decoded = ::urlDecode(std::string(text.c_str()));
+  return String(decoded.c_str());
 }
 
 void ESPWebServer::_handlerWrapper(
