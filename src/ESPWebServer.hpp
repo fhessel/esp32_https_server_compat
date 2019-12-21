@@ -124,12 +124,16 @@ protected:
   /** The currently active request */
   httpsserver::HTTPRequest *_activeRequest;
   httpsserver::HTTPResponse *_activeResponse;
+  HTTPUpload *_activeUpload;
 
   /** default node */
   ESPWebServerNode *_notFoundNode;
 
   /** Instance variables for standard headers */
   size_t _contentLength;
+
+  /** Default file upload handler */
+  THandlerFunction _uploadHandler;
 };
 
 class ESPWebServerNode : public httpsserver::ResourceNode {
@@ -139,6 +143,7 @@ public:
     const std::string &path,
     const std::string &method,
     const THandlerFunction &handler,
+    const THandlerFunction &uploadHandler,
     const std::string &tag = "");
   virtual ~ESPWebServerNode();
 
@@ -146,6 +151,7 @@ protected:
   friend class ESPWebServer;
   ESPWebServer *_wrapper;
   const THandlerFunction _wrappedHandler;
+  const THandlerFunction _wrappedUploadHandler;
 };
 
 class ESPWebServerStaticNode : public httpsserver::ResourceNode {

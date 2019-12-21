@@ -76,6 +76,10 @@ void ESPWebServer::on(const String &uri, THandlerFunction handler) {
 }
 
 void ESPWebServer::on(const String &uri, HTTPMethod method, THandlerFunction fn) {
+  on(uri, method, fn, _uploadHandler);
+}
+
+void ESPWebServer::on(const String &uri, HTTPMethod method, THandlerFunction fn, THandlerFunction ufn) {
   // TODO: Handle HTTP_ANY
   const char *methodname = "???";
   for (size_t n = 0; n < sizeof(METHODNAMES); n++) {
@@ -84,14 +88,8 @@ void ESPWebServer::on(const String &uri, HTTPMethod method, THandlerFunction fn)
       break;
     }
   }
-  ESPWebServerNode *node = new ESPWebServerNode(this,std::string(uri.c_str()), std::string(methodname),fn);
+  ESPWebServerNode *node = new ESPWebServerNode(this,std::string(uri.c_str()), std::string(methodname),fn, ufn);
   _server.registerNode(node);
-}
-
-void ESPWebServer::on(const String &uri, HTTPMethod method, THandlerFunction fn, THandlerFunction ufn) {
-  // TODO
-  // ufn handles uploads
-  HTTPS_LOGE("on() for upload not yet implemented");
 }
 
 void ESPWebServer::serveStatic(const char* uri, fs::FS& fs, const char* path, const char* cache_header) {
@@ -103,13 +101,12 @@ void ESPWebServer::onNotFound(THandlerFunction fn) {
   if (_notFoundNode != nullptr) {
     delete _notFoundNode;
   }
-  _notFoundNode = new ESPWebServerNode(this, "", "", fn);
+  _notFoundNode = new ESPWebServerNode(this, "", "", fn, THandlerFunction());
   _server.setDefaultNode(_notFoundNode);
 }
 
 void ESPWebServer::onFileUpload(THandlerFunction fn) {
-  // TODO
-  HTTPS_LOGE("onFileUpload() not yet implemented");
+  _uploadHandler = fn;
 }
 
 String ESPWebServer::uri() {
@@ -126,10 +123,7 @@ HTTPMethod ESPWebServer::method() {
 }
 
 HTTPUpload& ESPWebServer::upload() {
-  // TODO
-  static HTTPUpload upload;
-  HTTPS_LOGE("upload() not yet implemented");
-  return upload;
+  return *_activeUpload;
 }
 
 String ESPWebServer::pathArg(unsigned int i) {
@@ -313,10 +307,12 @@ ESPWebServerNode::ESPWebServerNode(
   const std::string &path,
   const std::string &method,
   const THandlerFunction &handler,
+  const THandlerFunction &uploadHandler,
   const std::string &tag) :
   ResourceNode(path, method, &(ESPWebServer::_handlerWrapper), tag),
   _wrapper(server),
-  _wrappedHandler(handler) {
+  _wrappedHandler(handler),
+  _wrappedUploadHandler(uploadHandler) {
 
 }
 
