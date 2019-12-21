@@ -22,7 +22,6 @@ struct {
 
 ESPWebServer::ESPWebServer(IPAddress addr, int port) :
   _server(HTTPServer(port, 4, addr)),
-  _corsEnabled(false),
   _contentLength(0)
 {
   _notFoundNode = nullptr;
@@ -48,8 +47,7 @@ void ESPWebServer::handleClient() {
 }
 
 void ESPWebServer::close() {
-  // TODO
-  HTTPS_LOGE("close() not yet implemented");
+  _server.stop();
 }
 
 void ESPWebServer::stop() {
@@ -62,8 +60,15 @@ bool ESPWebServer::authenticate(const char * username, const char * password) {
 }
 
 void ESPWebServer::requestAuthentication(HTTPAuthMethod mode, const char* realm, const String& authFailMsg) {
-  // TODO
-  HTTPS_LOGE("requestAuthentication() not yet implemented");
+  if (realm == NULL) realm = "Login Required";
+  if (mode == BASIC_AUTH) {
+    std::string authArg = "Basic realm=\"";
+    authArg += realm;
+    authArg += "\"";
+    _activeResponse->setHeader("WWW-Authenticate", authArg);
+  } else {
+    HTTPS_LOGE("Only BASIC_AUTH implemented");
+  }
 }
 
 void ESPWebServer::on(const String &uri, THandlerFunction handler) {
@@ -249,18 +254,17 @@ void ESPWebServer::send_P(int code, PGM_P content_type, PGM_P content, size_t co
 }
 
 void ESPWebServer::_standardHeaders() {
-  if (_corsEnabled) _activeResponse->setHeader("Access-Control-Allow-Origin", "*");
   if (_contentLength != CONTENT_LENGTH_NOT_SET && _contentLength != CONTENT_LENGTH_UNKNOWN) {
     _activeResponse->setHeader("Content-Length", String(_contentLength).c_str());
   }
 }
 
 void ESPWebServer::enableCORS(boolean value) {
-  _corsEnabled = value;
+  if (value) _server.setDefaultHeader("Access-Control-Allow-Origin", "*");
 }
 
 void ESPWebServer::enableCrossOrigin(boolean value) {
-  _corsEnabled = value;
+  enableCORS(value);
 }
 
 void ESPWebServer::setContentLength(const size_t contentLength) {

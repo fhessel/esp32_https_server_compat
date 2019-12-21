@@ -128,7 +128,6 @@ protected:
   ESPWebServerNode *_notFoundNode;
 
   /** Instance variables for standard headers */
-  bool _corsEnabled;
   size_t _contentLength;
 };
 
