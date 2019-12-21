@@ -141,21 +141,28 @@ String ESPWebServer::arg(String name) {
 }
 
 String ESPWebServer::arg(int i) {
-  // TODO
-  HTTPS_LOGE("arg(int) not yet implemented");
+  ResourceParameters *params = _activeRequest->getParams();
+  int idx=0;
+  for (auto it=params->beginQueryParameters(); it != params->endQueryParameters(); it++, idx++) {
+    if (idx == i)
+      return String(it->second.c_str());
+  }
   return "";
 }
 
 String ESPWebServer::argName(int i) {
-  // TODO
-  HTTPS_LOGE("argName() not yet implemented");
+  ResourceParameters *params = _activeRequest->getParams();
+  int idx=0;
+  for (auto it=params->beginQueryParameters(); it != params->endQueryParameters(); it++, idx++) {
+    if (idx == i)
+      return String(it->first.c_str());
+  }
   return "";
 }
 
 int ESPWebServer::args() {
-  // TODO
-  HTTPS_LOGE("args() not yet implemented");
-  return 0;
+  ResourceParameters *params = _activeRequest->getParams();
+  return params->getQueryParameterCount();
 }
 
 bool ESPWebServer::hasArg(String name) {
