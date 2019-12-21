@@ -55,12 +55,13 @@ void ESPWebServer::stop() {
 }
 
 bool ESPWebServer::authenticate(const char * username, const char * password) {
-  HTTPS_LOGE("authenticate() not yet implemented");
+  HTTPS_LOGE("authenticate(%s, %s) not yet implemented", username, password);
   return false;
 }
 
 void ESPWebServer::requestAuthentication(HTTPAuthMethod mode, const char* realm, const String& authFailMsg) {
   if (realm == NULL) realm = "Login Required";
+  HTTPS_LOGD("requestAuthentication(%s, %s)\n", mode, realm);
   if (mode == BASIC_AUTH) {
     std::string authArg = "Basic realm=\"";
     authArg += realm;
