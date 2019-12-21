@@ -17,7 +17,7 @@
   "dependencies": [
     {
       "name": "esp32_https_server",
-      "version": "0.3.0"
+      "version": "https://github.com/jackjansen/esp32_https_server.git#exp-jack-compat"
     }
   ],
   "license": "MIT",

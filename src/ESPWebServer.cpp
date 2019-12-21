@@ -138,7 +138,8 @@ String ESPWebServer::arg(String name) {
   	return "";
   }
   ResourceParameters *params = _activeRequest->getParams();
-  std::string value = params->getRequestParameter(std::string(name.c_str()));
+  std::string value;
+  params->getQueryParameter(std::string(name.c_str()), value);
   HTTPS_LOGD("arg(%s) returns %s", name.c_str(), value.c_str());
   return String(value.c_str());
 }
@@ -167,7 +168,7 @@ bool ESPWebServer::hasArg(String name) {
   	return false;
   }
   ResourceParameters *params = _activeRequest->getParams();
-  bool rv = params->isRequestParameterSet(std::string(name.c_str()));
+  bool rv = params->isQueryParameterSet(std::string(name.c_str()));
   HTTPS_LOGD("hasArg(%s) returns %d", name.c_str(), (int)rv);
   return rv;
 }
