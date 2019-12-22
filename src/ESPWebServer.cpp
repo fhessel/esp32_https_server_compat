@@ -20,15 +20,22 @@ struct {
   {HTTP_OPTIONS, "OPTIONS"},
 };
 
+ESPWebServer::ESPWebServer(HTTPServer *server) :
+  _server(server),
+  _contentLength(0)
+{
+  _notFoundNode = nullptr;
+}
+
 ESPWebServer::ESPWebServer(IPAddress addr, int port) :
-  _server(HTTPServer(port, 4, addr)),
+  _server(new HTTPServer(port, 4, addr)),
   _contentLength(0)
 {
   _notFoundNode = nullptr;
 }
 
 ESPWebServer::ESPWebServer(int port) :
-  _server(HTTPServer(port, 4)) {
+  _server(new HTTPServer(port, 4)) {
   _notFoundNode = nullptr;
 }
 
@@ -39,19 +46,19 @@ ESPWebServer::~ESPWebServer() {
 }
 
 void ESPWebServer::begin() {
-  _server.start();
+  _server->start();
 }
 
 void ESPWebServer::handleClient() {
-  _server.loop();
+  _server->loop();
 }
 
 void ESPWebServer::close() {
-  _server.stop();
+  _server->stop();
 }
 
 void ESPWebServer::stop() {
-  _server.stop();
+  _server->stop();
 }
 
 bool ESPWebServer::authenticate(const char * username, const char * password) {
@@ -91,7 +98,7 @@ void ESPWebServer::on(const String &uri, HTTPMethod method, THandlerFunction fn,
     }
   }
   ESPWebServerNode *node = new ESPWebServerNode(this,std::string(uri.c_str()), std::string(methodname),fn, ufn);
-  _server.registerNode(node);
+  _server->registerNode(node);
 }
 
 void ESPWebServer::serveStatic(const char* uri, fs::FS& fs, const char* path, const char* cache_header) {
@@ -103,7 +110,7 @@ void ESPWebServer::onNotFound(THandlerFunction fn) {
     delete _notFoundNode;
   }
   _notFoundNode = new ESPWebServerNode(this, "", "", fn, THandlerFunction());
-  _server.setDefaultNode(_notFoundNode);
+  _server->setDefaultNode(_notFoundNode);
 }
 
 void ESPWebServer::onFileUpload(THandlerFunction fn) {
@@ -270,7 +277,7 @@ void ESPWebServer::_standardHeaders() {
 }
 
 void ESPWebServer::enableCORS(boolean value) {
-  if (value) _server.setDefaultHeader("Access-Control-Allow-Origin", "*");
+  if (value) _server->setDefaultHeader("Access-Control-Allow-Origin", "*");
 }
 
 void ESPWebServer::enableCrossOrigin(boolean value) {

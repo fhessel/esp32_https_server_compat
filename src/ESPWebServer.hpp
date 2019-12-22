@@ -11,6 +11,7 @@
 #include <HTTPRequest.hpp>
 #include <HTTPResponse.hpp>
 #include <HTTPSCallbackFunction.hpp>
+#include <SSLCert.hpp>
 
 #include "HTTP_Method.h"
 
@@ -46,6 +47,9 @@ class ESPWebServerNode;
 
 class ESPWebServer
 {
+  friend class ESPWebServerSecure;
+protected:
+  ESPWebServer(httpsserver::HTTPServer* _server);
 public:
   ESPWebServer(IPAddress addr, int port = 80);
   ESPWebServer(int port = 80);
@@ -135,7 +139,7 @@ protected:
   void _prepareStreamFile(size_t fileSize, const String& contentType);
 
   /** The backing server instance */
-  httpsserver::HTTPServer _server;
+  httpsserver::HTTPServer* _server;
 
   /** The currently active request */
   httpsserver::HTTPRequest *_activeRequest;
