@@ -230,7 +230,7 @@ void ESPWebServer::_prepareStreamFile(size_t fileSize, const String& contentType
 }
 
 void ESPWebServer::send(int code, const char* content_type, const String& content) {
-  _contentLength = content.length();
+  if (_contentLength == CONTENT_LENGTH_NOT_SET) _contentLength = content.length();
   _activeResponse->setStatusCode(code);
   _activeResponse->setHeader("Content-Type", content_type);
   _standardHeaders();
@@ -246,7 +246,7 @@ void ESPWebServer::send(int code, const String& content_type, const String& cont
 }
 
 void ESPWebServer::send_P(int code, PGM_P content_type, PGM_P content) {
-  _contentLength = strlen_P(content);
+  if (_contentLength == CONTENT_LENGTH_NOT_SET) _contentLength = strlen_P(content);
   _activeResponse->setStatusCode(code);
   String memContentType(FPSTR(content_type));
   _activeResponse->setHeader("Content-Type", memContentType.c_str());
@@ -255,7 +255,7 @@ void ESPWebServer::send_P(int code, PGM_P content_type, PGM_P content) {
 }
 
 void ESPWebServer::send_P(int code, PGM_P content_type, PGM_P content, size_t contentLength) {
-  _contentLength = contentLength;
+  if (_contentLength == CONTENT_LENGTH_NOT_SET) _contentLength = contentLength;
   _activeResponse->setStatusCode(code);
   String memContentType(FPSTR(content_type));
   _activeResponse->setHeader("Content-Type", memContentType.c_str());
