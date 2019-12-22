@@ -107,7 +107,20 @@ public:
 
   static String urlDecode(const String& text);
 
-  //template<typename T> size_t streamFile(T &file, const String& contentType);
+  template<typename T> size_t streamFile(T &file, const String& contentType) {
+    size_t fileSize = file.size();
+    uint8_t buffer[HTTP_UPLOAD_BUFLEN];
+    _prepareStreamFile(fileSize, contentType);
+    size_t didWrite = 0;
+    while (fileSize > 0) {
+      size_t thisRead = file.read(buffer, fileSize > HTTP_UPLOAD_BUFLEN ? HTTP_UPLOAD_BUFLEN : fileSize);
+      if (thisRead == 0) break;
+      _activeResponse->write(buffer, thisRead);
+      didWrite += thisRead;
+      fileSize -= thisRead;
+    }
+    return didWrite;
+  }
 
 protected:
   friend class ESPWebServerNode;
@@ -117,6 +130,9 @@ protected:
 
   /** Add standard headers */
   void _standardHeaders();
+
+  /** Prepare for streaming a file */
+  void _prepareStreamFile(size_t fileSize, const String& contentType);
 
   /** The backing server instance */
   httpsserver::HTTPServer _server;

@@ -222,6 +222,13 @@ String ESPWebServer::hostHeader() {
   return header("Host");
 }
 
+void ESPWebServer::_prepareStreamFile(size_t fileSize, const String& contentType) {
+  _contentLength = fileSize;
+  _activeResponse->setStatusCode(200);
+  _activeResponse->setHeader("Content-Type", contentType.c_str());
+  _standardHeaders();
+}
+
 void ESPWebServer::send(int code, const char* content_type, const String& content) {
   _contentLength = content.length();
   _activeResponse->setStatusCode(code);
