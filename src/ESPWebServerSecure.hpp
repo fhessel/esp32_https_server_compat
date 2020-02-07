@@ -7,6 +7,7 @@
 
 class ESPWebServerSecure;
 
+// Placeholder class, to make the API conform to what Esp8266WebServerSecure provides.
 class ESPWebServerUnderlyingServer {
   friend class ESPWebServerSecure;
 protected:
@@ -26,6 +27,7 @@ public:
   ESPWebServerSecure(int port = 442);
   void setServerKeyAndCert(const uint8_t *key, int keyLen, const uint8_t *cert, int certLen);
   void setServerKeyAndCert_P(const uint8_t *key, int keyLen, const uint8_t *cert, int certLen);
+  ESPWebServerUnderlyingServer& getServer() { return _underlyingServer; }
 protected:
   ESPWebServerUnderlyingServer _underlyingServer;
   httpsserver::SSLCert _sslCert;
