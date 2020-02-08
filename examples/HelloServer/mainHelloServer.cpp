@@ -4,8 +4,8 @@
 #include <ESPWebServer.hpp>
 #include <ESPmDNS.h>
 
-const char* ssid = "........";
-const char* password = "........";
+const char* ssid = "......";
+const char* password = "......";
 
 ESPWebServer server(80);
 
@@ -13,13 +13,17 @@ const int led = 13;
 
 void handleRoot() {
   digitalWrite(led, 1);
-  server.send(200, "text/plain", "hello from esp32!");
+  server.send(200, "text/plain", "hello from esp32! See /form and /inline too!");
   digitalWrite(led, 0);
 }
 
 void handleForm() {
   String line = server.arg("line");
+  Serial.print("line: ");
+  Serial.println(line);
   String multi = server.arg("multi");
+  Serial.print("multi: ");
+  Serial.println(multi);
   line.toLowerCase();
   multi.toUpperCase();
   String rv;
@@ -52,7 +56,7 @@ void handleNotFound() {
 void setup(void) {
   pinMode(led, OUTPUT);
   digitalWrite(led, 0);
-  Serial.begin(115200);
+  Serial.begin(9600);
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
   Serial.println("");
@@ -73,7 +77,7 @@ void setup(void) {
   }
 
   server.on("/", handleRoot);
-
+  server.on("/form", handleForm);
   server.on("/inline", []() {
     server.send(200, "text/plain", "this works as well");
   });

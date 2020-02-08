@@ -68,7 +68,7 @@ bool ESPWebServer::authenticate(const char * username, const char * password) {
 
 void ESPWebServer::requestAuthentication(HTTPAuthMethod mode, const char* realm, const String& authFailMsg) {
   if (realm == NULL) realm = "Login Required";
-  HTTPS_LOGD("requestAuthentication(%s, %s)\n", mode, realm);
+  HTTPS_LOGD("requestAuthentication(%d, %s)\n", mode, realm);
   if (mode == BASIC_AUTH) {
     std::string authArg = "Basic realm=\"";
     authArg += realm;
