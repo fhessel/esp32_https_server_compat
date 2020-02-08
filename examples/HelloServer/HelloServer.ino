@@ -16,6 +16,21 @@ void handleRoot() {
   digitalWrite(led, 0);
 }
 
+void handleForm() {
+  String line = server.get("line");
+  String multi = server.get("multi");
+  line = line.toLowerCase() + line.toUpperCase();
+  multi = multi.toLowerCase() + multi.toUpperCase();
+  String rv;
+  rv = "<html><head><title>Test Form</title></head><body>";
+  rv += "<form method='get'>";
+  rv += "Single line:<br><input name='line' value='" + line + "'><br>";
+  rv += "Multi line:<br><textarea name='multi' rows='8' cols='40'>" + multi + "</textarea><br>";
+  rv += "<input type='submit' value='upper+lower case'>";
+  rv += "</form></body></html>";
+  return rv;
+}
+
 void handleNotFound() {
   digitalWrite(led, 1);
   String message = "File Not Found\n\n";
