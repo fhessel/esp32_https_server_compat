@@ -141,6 +141,29 @@ String ESPWebServer::pathArg(unsigned int i) {
 }
 
 String ESPWebServer::arg(String name) {
+  // Special case: arg("plain") returns the body of non-multipart requests.
+  if (name == "plain") {
+    bool isForm = false;
+    HTTPHeaders* headers = _activeRequest->getHTTPHeaders();
+    HTTPHeader* ctHeader = headers->get("Content-Type");
+    if (ctHeader && ctHeader->_value.substr(0, 10) == "multipart/") {
+      isForm = true;
+    }
+    if (!isForm) {
+      size_t bodyLength = _activeRequest->getContentLength();
+      String rv;
+      rv.reserve(bodyLength);
+      char buffer[257];
+      while(!_activeRequest->requestComplete()) {
+        size_t readLength = _activeRequest->readBytes((byte*)buffer, 256);
+        if (readLength <= 0) break;
+        buffer[readLength] = 0;
+        rv += buffer;
+      }
+      HTTPS_LOGD("arg(\"plain\") returns %d bytes", rv.length());
+      return rv;
+    }
+  }
   ResourceParameters *params = _activeRequest->getParams();
   std::string value;
   params->getQueryParameter(std::string(name.c_str()), value);
