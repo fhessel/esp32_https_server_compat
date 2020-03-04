@@ -262,9 +262,13 @@ void ESPWebServer::_prepareStreamFile(size_t fileSize, const String& contentType
 void ESPWebServer::send(int code, const char* content_type, const String& content) {
   if (_contentLength == CONTENT_LENGTH_NOT_SET) _contentLength = content.length();
   _activeResponse->setStatusCode(code);
-  _activeResponse->setHeader("Content-Type", content_type);
+  if (content_type != NULL) {
+    _activeResponse->setHeader("Content-Type", content_type);
+  }
   _standardHeaders();
-  _activeResponse->print(content);
+  if (content) {
+    _activeResponse->print(content);
+  }
 }
 
 void ESPWebServer::send(int code, char* content_type, const String& content) {
