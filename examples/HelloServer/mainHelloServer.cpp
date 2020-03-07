@@ -1,8 +1,13 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WiFiClient.h>
-#include <ESPWebServer.hpp>
 #include <ESPmDNS.h>
+#if 0
+#include <WebServer.h>
+typedef WebServer ESPWebServer;
+#else
+#include <ESPWebServer.hpp>
+#endif
 
 const char* ssid = "........";
 const char* password = "........";
@@ -24,6 +29,9 @@ void handleForm() {
   String multi = server.arg("multi");
   Serial.print("multi: ");
   Serial.println(multi);
+  String file = server.arg("file");
+  Serial.print("file: ");
+  Serial.println(file);
   line.toLowerCase();
   multi.toUpperCase();
   String rv;
@@ -32,18 +40,21 @@ void handleForm() {
   rv += "<form method='GET'>";
   rv += "Single line:<br><input name='line' value='" + line + "'><br>";
   rv += "Multi line:<br><textarea name='multi' rows='8' cols='40'>" + multi + "</textarea><br>";
+  rv += "File:<br><input type='file' name='file'><br>";
   rv += "<input type='submit' value='upper+lower case'>";
   rv += "</form></body></html>";
   rv += "<h2>Form using POST urlencoded</h2>";
   rv += "<form method='POST' action='/form'>";
   rv += "Single line:<br><input name='line' value='" + line + "'><br>";
   rv += "Multi line:<br><textarea name='multi' rows='8' cols='40'>" + multi + "</textarea><br>";
+  rv += "File:<br><input type='file' name='file'><br>";
   rv += "<input type='submit' value='upper+lower case'>";
   rv += "</form></body></html>";
   rv += "<h2>Form using POST with multipart</h2>";
   rv += "<form method='POST' action=\"/upload\" enctype=\"multipart/form-data\">";
   rv += "Single line:<br><input name='line' value='" + line + "'><br>";
   rv += "Multi line:<br><textarea name='multi' rows='8' cols='40'>" + multi + "</textarea><br>";
+  rv += "File:<br><input type='file' name='file'><br>";
   rv += "<input type='submit' value='upper+lower case'>";
   rv += "</form></body></html>";
   server.send(200, "text/html", rv);
@@ -51,6 +62,12 @@ void handleForm() {
 
 void handleUpload() {
   Serial.println("handleUpload() called");
+  String line = server.arg("line");
+  Serial.print("line: ");
+  Serial.println(line);
+  String multi = server.arg("multi");
+  Serial.print("multi: ");
+  Serial.println(multi);
   server.send(200);
 }
 

@@ -1,5 +1,8 @@
 #include <WiFi.h>
 #include <WiFiClient.h>
-#include <ESPWebServer.hpp>
 #include <ESPmDNS.h>
-
+#if 0
+#include <WebServer.h>
+#else
+#include <ESPWebServer.hpp>
+#endif

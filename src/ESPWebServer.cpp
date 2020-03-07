@@ -1,11 +1,18 @@
 
 #include "ESPWebServer.hpp"
+#include <HTTPMultipartBodyParser.hpp>
+#include <HTTPURLEncodedBodyParser.hpp>
 #include <string>
+#include <map>
 
 using namespace httpsserver;
 
 /* Copy the content of Arduino String s into a newly allocated char array p */
 #define ARDUINOTONEWCHARARR(s,p) {size_t sLen=s.length()+1;char *c=new char[sLen];c[sLen-1]=0;s.toCharArray(p,sLen);p=c;}
+
+class BodyResourceParameters : public ResourceParameters {
+  friend class ESPWebServer;
+};
 
 struct {
   int val;
@@ -346,6 +353,62 @@ void ESPWebServer::_handlerWrapper(
   node->_wrapper->_activeRequest = req;
   node->_wrapper->_activeResponse = res;
   node->_wrapper->_contentLength = CONTENT_LENGTH_NOT_SET;
+  // POST form data needs to be handled specially
+  if (req->getMethod() == "POST") {
+    HTTPBodyParser *parser = NULL;
+    std::string contentType = req->getHeader("Content-Type");
+    size_t semicolonPos = contentType.find(";");
+    if (semicolonPos != std::string::npos) {
+      contentType = contentType.substr(0, semicolonPos);
+    }
+    if (contentType == "multipart/form-data") {
+      parser = new HTTPMultipartBodyParser(req); 
+    }
+    if (contentType == "application/x-www-form-urlencoded") {
+      parser = new HTTPMultipartBodyParser(req);
+    }
+    BodyResourceParameters bodyFields;
+
+    while (parser && parser->nextField()) {
+      std::string name = parser->getFieldName();
+      std::string filename = parser->getFieldFilename();
+      if (filename != "") {
+        // This field is a file. Use the uploader
+        std::string mimeType = parser->getFieldMimeType();
+        HTTPUpload uploader;
+        node->_wrapper->_activeUpload = &uploader;
+        uploader.status = UPLOAD_FILE_START;
+        uploader.name = String(name.c_str());
+        uploader.filename = String(filename.c_str());
+        uploader.type = String(mimeType.c_str());
+        uploader.totalSize = 0;
+        uploader.currentSize = 0;
+        // First call to the uploader callback
+        node->_wrappedUploadHandler();
+        // Now loop over the data
+        uploader.status = UPLOAD_FILE_WRITE;
+        while(!parser->endOfField()) {
+          uploader.currentSize = parser->read(uploader.buf, sizeof(uploader.buf));
+          uploader.totalSize += uploader.currentSize;
+          node->_wrappedUploadHandler();
+        }
+        uploader.status = UPLOAD_FILE_END;
+        node->_wrappedUploadHandler();
+        node->_wrapper->_activeUpload = NULL;
+      } else {
+        // This field is not a file. Add the value
+        std::string value("");
+        while (!parser->endOfField()) {
+          byte buf[512];
+          size_t readLength = parser->read(buf, 512);
+          std::string bufString((char *)buf, readLength);
+          value += bufString;
+        }
+        bodyFields.setQueryParameter(name, value);
+      }
+    }
+    delete parser;
+  }
   node->_wrappedHandler();
   node->_wrapper->_activeRequest = nullptr;
   node->_wrapper->_activeResponse = nullptr;
