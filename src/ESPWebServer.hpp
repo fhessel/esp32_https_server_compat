@@ -198,6 +198,4 @@ protected:
 
 };
 
-ESPWebServerStaticNode(this, std::string(uri), fs, std::string(path), std::string(cache_header));
-
 #endif //ESPWEBSERVER_H

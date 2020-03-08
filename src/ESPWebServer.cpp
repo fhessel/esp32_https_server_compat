@@ -468,7 +468,10 @@ void ESPWebServer::_handlerWrapper(
  */
 void ESPWebServer::_staticPageHandler(HTTPRequest * req, HTTPResponse * res) {
   assert(req->getMethod() == "GET");
-  ESPWebServerStaticNode *node = (ESPWebServerNode*)req->getResolvedNode();
+  ESPWebServerStaticNode *node = (ESPWebServerStaticNode*)req->getResolvedNode();
+  // xxxjack remove urlpath bits from reqFile
+  // xxxjack add index.htm if needed
+  // xxxjack prepend filepath
   // Redirect / to /index.html
   std::string reqFile = req->getRequestString()=="/" ? "/index.html" : req->getRequestString();
 
