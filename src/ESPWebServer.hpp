@@ -145,6 +145,7 @@ protected:
   httpsserver::HTTPRequest *_activeRequest;
   httpsserver::HTTPResponse *_activeResponse;
   HTTPUpload *_activeUpload;
+  httpsserver::ResourceParameters *_activeParams;
 
   /** default node */
   ESPWebServerNode *_notFoundNode;

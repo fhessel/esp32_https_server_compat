@@ -142,8 +142,7 @@ HTTPUpload& ESPWebServer::upload() {
 }
 
 String ESPWebServer::pathArg(unsigned int i) {
-  ResourceParameters *params = _activeRequest->getParams();
-  auto rv = params->getPathParameter(i);
+  auto rv = _activeParams->getPathParameter(i);
   return String(rv.c_str());
 }
 
@@ -171,17 +170,15 @@ String ESPWebServer::arg(String name) {
       return rv;
     }
   }
-  ResourceParameters *params = _activeRequest->getParams();
   std::string value;
-  params->getQueryParameter(std::string(name.c_str()), value);
+  _activeParams->getQueryParameter(std::string(name.c_str()), value);
   HTTPS_LOGD("arg(%s) returns %s", name.c_str(), value.c_str());
   return String(value.c_str());
 }
 
 String ESPWebServer::arg(int i) {
-  ResourceParameters *params = _activeRequest->getParams();
   int idx=0;
-  for (auto it=params->beginQueryParameters(); it != params->endQueryParameters(); it++, idx++) {
+  for (auto it=_activeParams->beginQueryParameters(); it != _activeParams->endQueryParameters(); it++, idx++) {
     if (idx == i)
       return String(it->second.c_str());
   }
@@ -189,9 +186,8 @@ String ESPWebServer::arg(int i) {
 }
 
 String ESPWebServer::argName(int i) {
-  ResourceParameters *params = _activeRequest->getParams();
   int idx=0;
-  for (auto it=params->beginQueryParameters(); it != params->endQueryParameters(); it++, idx++) {
+  for (auto it=_activeParams->beginQueryParameters(); it != _activeParams->endQueryParameters(); it++, idx++) {
     if (idx == i)
       return String(it->first.c_str());
   }
@@ -199,13 +195,11 @@ String ESPWebServer::argName(int i) {
 }
 
 int ESPWebServer::args() {
-  ResourceParameters *params = _activeRequest->getParams();
-  return params->getQueryParameterCount();
+  return _activeParams->getQueryParameterCount();
 }
 
 bool ESPWebServer::hasArg(String name) {
-  ResourceParameters *params = _activeRequest->getParams();
-  bool rv = params->isQueryParameterSet(std::string(name.c_str()));
+  bool rv = _activeParams->isQueryParameterSet(std::string(name.c_str()));
   HTTPS_LOGD("hasArg(%s) returns %d", name.c_str(), (int)rv);
   return rv;
 }
@@ -349,9 +343,11 @@ String ESPWebServer::urlDecode(const String& text) {
 void ESPWebServer::_handlerWrapper(
   httpsserver::HTTPRequest *req,
   httpsserver::HTTPResponse *res) {
+  BodyResourceParameters *bodyParams = nullptr;
   ESPWebServerNode *node = (ESPWebServerNode*)req->getResolvedNode();
   node->_wrapper->_activeRequest = req;
   node->_wrapper->_activeResponse = res;
+  node->_wrapper->_activeParams = req->getParams();
   node->_wrapper->_contentLength = CONTENT_LENGTH_NOT_SET;
   // POST form data needs to be handled specially
   if (req->getMethod() == "POST") {
@@ -365,9 +361,16 @@ void ESPWebServer::_handlerWrapper(
       parser = new HTTPMultipartBodyParser(req); 
     }
     if (contentType == "application/x-www-form-urlencoded") {
-      parser = new HTTPMultipartBodyParser(req);
+      parser = new HTTPURLEncodedBodyParser(req);
     }
-    BodyResourceParameters bodyFields;
+    //
+    // _activeParams should be the merger of the URL parameters and the body parameters.
+    //
+    bodyParams = new BodyResourceParameters();
+    for (auto it = node->_wrapper->_activeParams->beginQueryParameters(); it != node->_wrapper->_activeParams->endQueryParameters(); it++) {
+      bodyParams->setQueryParameter(it->first, it->second);
+    }
+    node->_wrapper->_activeParams = bodyParams;
 
     while (parser && parser->nextField()) {
       std::string name = parser->getFieldName();
@@ -404,7 +407,7 @@ void ESPWebServer::_handlerWrapper(
           std::string bufString((char *)buf, readLength);
           value += bufString;
         }
-        bodyFields.setQueryParameter(name, value);
+        bodyParams->setQueryParameter(name, value);
       }
     }
     delete parser;
@@ -412,6 +415,7 @@ void ESPWebServer::_handlerWrapper(
   node->_wrappedHandler();
   node->_wrapper->_activeRequest = nullptr;
   node->_wrapper->_activeResponse = nullptr;
+  node->_wrapper->_activeParams = nullptr;
 }
 
 ESPWebServerNode::ESPWebServerNode(
