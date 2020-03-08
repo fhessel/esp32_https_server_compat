@@ -136,33 +136,6 @@ void handleFormUploadFile() {
 }
 
 void handleDirectory() {
-  if (server.hasArg("filename")) {
-  	// Download file
-    String pathname = "/public/" + server.arg("filename");
-    File file = SPIFFS.open(pathname.c_str());
-    const char *contentType = "application/binary";
-    if (file.available()) {
-      if (pathname.endsWith(".txt")) {
-        contentType = "text/plain";
-      } else if (pathname.endsWith(".jpg")) {
-        contentType = "image/jpeg";
-      } else if (pathname.endsWith(".png")) {
-        contentType = "image/png";
-      }
-      server.setContentLength(file.size());
-      server.send(200, contentType);
-      size_t length;
-      do {
-        char buffer[256];
-        length = file.read((uint8_t *)buffer, 256);
-        server.sendContent_P(buffer, length);
-      } while (length > 0);
-    } else {
-      server.send(404, "text/plain", "Not found.");
-      
-    }
-  	return;
-  }
   String rv;
   rv += "<html><head><title>File Listing</title><head><body>\n";
   File d = SPIFFS.open("/public");
@@ -175,8 +148,8 @@ void handleDirectory() {
     while (f) {
       std::string pathname(f.name());
       std::string filename = pathname.substr(8); // Remove /public/
-      rv += "<li><a href=\"/public?filename=";
-      rv += String(filename.c_str());
+      rv += "<li><a href=\"";
+      rv += String(pathname.c_str());
       rv += "\">";
       rv += String(filename.c_str());
       rv += "</a>";
@@ -236,7 +209,9 @@ void setup(void) {
   server.on("/upload", HTTP_POST, handleFormUpload, handleFormUploadFile);
   server.on("/edit", HTTP_GET, handleFormEdit);
   server.on("/edit", HTTP_POST, handleFormEdit);
+  // Note: /public (without trailing /) gives directory listing, but /public/... retrieves static files.
   server.on("/public", HTTP_GET, handleDirectory);
+  server.serveStatic("/public/", SPIFFS, "/public/");
 
   server.onNotFound(handleNotFound);
 
