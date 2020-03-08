@@ -55,6 +55,7 @@ void handleRoot() {
 }
 
 void handleFormEdit() {
+  if (!server.authenticate("admin", "admin")) return server.requestAuthentication();
   bool hasFilename = server.hasArg("filename");;
 	String filename = server.arg("filename");
 	String pathname = String("/public/") + filename;

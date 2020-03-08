@@ -21,8 +21,9 @@ static std::string trim(const std::string& s) {
 /* Helper function: base64 encoding */
 static std::string b64encode(const std::string& src) {
   size_t bytesNeeded = base64_encode_expected_len(src.length());
-  char *encoded = (char *)malloc(bytesNeeded);
-  base64_encode_chars(src.c_str(), src.length(), encoded);
+  char *encoded = (char *)malloc(bytesNeeded+1);
+  int bytesUsed = base64_encode_chars(src.c_str(), src.length(), encoded);
+  encoded[bytesUsed] = '\0';
   std::string rv(encoded);
   free(encoded);
   return rv;
@@ -132,6 +133,7 @@ void ESPWebServer::requestAuthentication(HTTPAuthMethod mode, const char* realm,
     _activeResponse->setHeader("WWW-Authenticate", authArg);
 #endif
   }
+  send(401, "text/html", authFailMsg);
 }
 
 void ESPWebServer::on(const String &uri, THandlerFunction handler) {
