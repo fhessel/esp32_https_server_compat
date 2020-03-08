@@ -4,11 +4,29 @@
 #include <HTTPURLEncodedBodyParser.hpp>
 #include <string>
 #include <map>
+#include <libb64/cencode.h>
 
 using namespace httpsserver;
 
 /* Copy the content of Arduino String s into a newly allocated char array p */
 #define ARDUINOTONEWCHARARR(s,p) {size_t sLen=s.length()+1;char *c=new char[sLen];c[sLen-1]=0;s.toCharArray(p,sLen);p=c;}
+
+/* Helper function: trim whitespace from a string */
+static std::string trim(const std::string& s) {
+   auto wsfront=std::find_if_not(s.begin(),s.end(),[](int c){return std::isspace(c);});
+   auto wsback=std::find_if_not(s.rbegin(),s.rend(),[](int c){return std::isspace(c);}).base();
+   return (wsback<=wsfront ? std::string() : std::string(wsfront,wsback));
+}
+
+/* Helper function: base64 encoding */
+static std::string b64encode(const std::string& src) {
+  size_t bytesNeeded = base64_encode_expected_len(src.length());
+  char *encoded = (char *)malloc(bytesNeeded);
+  base64_encode_chars(src.c_str(), src.length(), encoded);
+  std::string rv(encoded);
+  free(encoded);
+  return rv;
+}
 
 class BodyResourceParameters : public ResourceParameters {
   friend class ESPWebServer;
@@ -69,7 +87,25 @@ void ESPWebServer::stop() {
 }
 
 bool ESPWebServer::authenticate(const char * username, const char * password) {
-  HTTPS_LOGE("authenticate(%s, %s) not yet implemented", username, password);
+  std::string authHeader = _activeRequest->getHeader("Authorization");
+  if (authHeader == "") return false;
+  if (authHeader.substr(0, 5) == "Basic") {
+    std::string authReq = authHeader.substr(6);
+    authReq = trim(authReq);
+    std::string toEncode(username);
+    toEncode += ":";
+    toEncode += password;
+    std::string encoded = b64encode(toEncode);
+    return (encoded == authReq);
+  } else if (authHeader.substr(0, 6) == "Digest") {
+    HTTPS_LOGE("Only BASIC_AUTH implemented");
+#if 0
+    std::string authReq = authHeader.substr(6);
+    std::string realm = _extractParam(authReq, "realm=\"");
+    std::string hash = credentialHash(username, _realm, password);
+    return authenticateDigest(username, hash);
+#endif
+  }
   return false;
 }
 
@@ -83,6 +119,18 @@ void ESPWebServer::requestAuthentication(HTTPAuthMethod mode, const char* realm,
     _activeResponse->setHeader("WWW-Authenticate", authArg);
   } else {
     HTTPS_LOGE("Only BASIC_AUTH implemented");
+#if 0
+    _snonce = _getRandomHexString();
+    _sopaque = _getRandomHexString();
+    std::string authArg = "Digest realm=\"";
+    authArg += realm;
+    authArg += "\", qop=\"auth\", nonce=\"";
+    authArg += _snonce;
+    authArg += "\", opaque=\"";
+    authArg += _sopaque;
+    authArg += "\"";
+    _activeResponse->setHeader("WWW-Authenticate", authArg);
+#endif
   }
 }
 
