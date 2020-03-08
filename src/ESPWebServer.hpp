@@ -128,9 +128,13 @@ public:
 
 protected:
   friend class ESPWebServerNode;
+  friend class ESPWebServerStaticNode;
 
   /** The wrapper function that maps on() calls */
   static void _handlerWrapper(httpsserver::HTTPRequest *req, httpsserver::HTTPResponse *res);
+
+  /** The wrapper function that maps on() calls */
+  static void _staticPageHandler(httpsserver::HTTPRequest *req, httpsserver::HTTPResponse *res);
 
   /** Add standard headers */
   void _standardHeaders();
@@ -174,5 +178,26 @@ protected:
   const THandlerFunction _wrappedHandler;
   const THandlerFunction _wrappedUploadHandler;
 };
+
+class ESPWebServerStaticNode : public httpsserver::ResourceNode {
+public:
+  ESPWebServerStaticNode(
+    ESPWebServer *server,
+    const std::string& urlPath,
+    FS& fs,
+    const std::string& filePath,
+    const std::string& cache_header);
+  virtual ~ESPWebServerStaticNode();
+
+protected:
+  friend class ESPWebServer;
+  ESPWebServer *_wrapper;
+  std::string _filePath;
+  FS& _fileSystem;
+  std::string _cache_header;
+
+};
+
+ESPWebServerStaticNode(this, std::string(uri), fs, std::string(path), std::string(cache_header));
 
 #endif //ESPWEBSERVER_H

@@ -28,6 +28,19 @@ struct {
   {HTTP_OPTIONS, "OPTIONS"},
 };
 
+// We need to specify some content-type mapping, so the resources get delivered with the
+// right content type and are displayed correctly in the browser
+char contentTypes[][2][32] = {
+  {".html", "text/html"},
+  {".txt", "text/plain"},
+  {".css",  "text/css"},
+  {".js",   "application/javascript"},
+  {".json", "application/json"},
+  {".png",  "image/png"},
+  {".jpg",  "image/jpg"},
+  {"", ""}
+};
+
 ESPWebServer::ESPWebServer(HTTPServer *server) :
   _server(server),
   _contentLength(0)
@@ -138,6 +151,8 @@ void ESPWebServer::on(const String &uri, HTTPMethod method, THandlerFunction fn,
 
 void ESPWebServer::serveStatic(const char* uri, fs::FS& fs, const char* path, const char* cache_header) {
   HTTPS_LOGE("serveStatic() not implemented");
+  ESPWebServerStaticNode *node = new ESPWebServerStaticNode(this, std::string(uri), fs, std::string(path), std::string(cache_header));
+  _server->registerNode(node);
 }
 
 void ESPWebServer::onNotFound(THandlerFunction fn) {
@@ -446,6 +461,55 @@ void ESPWebServer::_handlerWrapper(
   node->_wrapper->_activeParams = nullptr;
 }
 
+/**
+ * This handler function will try to load the requested resource from SPIFFS's /public folder.
+ * 
+ * If the method is not GET, it will throw 405, if the file is not found, it will throw 404.
+ */
+void ESPWebServer::_staticPageHandler(HTTPRequest * req, HTTPResponse * res) {
+  assert(req->getMethod() == "GET");
+  ESPWebServerStaticNode *node = (ESPWebServerNode*)req->getResolvedNode();
+  // Redirect / to /index.html
+  std::string reqFile = req->getRequestString()=="/" ? "/index.html" : req->getRequestString();
+
+  // Try to open the file
+  std::string filename = node->_filePath + reqFile;
+
+  // Check if the file exists
+  if (!node->_fileSystem.exists(filename.c_str())) {
+    // Send "404 Not Found" as response, as the file doesn't seem to exist
+    res->setStatusCode(404);
+    res->setStatusText("Not found");
+    res->println("404 Not Found");
+    return;
+  }
+
+  File file = node->_fileSystem.open(filename.c_str());
+
+  // Set length
+  res->setHeader("Content-Length", httpsserver::intToString(file.size()));
+
+  // Content-Type is guessed using the definition of the contentTypes-table defined above
+  int cTypeIdx = 0;
+  do {
+    if(reqFile.rfind(contentTypes[cTypeIdx][0])!=std::string::npos) {
+      res->setHeader("Content-Type", contentTypes[cTypeIdx][1]);
+      break;
+    }
+    cTypeIdx+=1;
+  } while(strlen(contentTypes[cTypeIdx][0])>0);
+
+  // Read the file and write it to the response
+  uint8_t buffer[256];
+  size_t length = 0;
+  do {
+    length = file.read(buffer, 256);
+    res->write(buffer, length);
+  } while (length > 0);
+
+  file.close();
+}
+
 ESPWebServerNode::ESPWebServerNode(
   ESPWebServer *server,
   const std::string &path,
@@ -462,4 +526,20 @@ ESPWebServerNode::ESPWebServerNode(
 
 ESPWebServerNode::~ESPWebServerNode() {
 
+}
+
+ESPWebServerStaticNode::ESPWebServerStaticNode(
+  ESPWebServer *server,
+  const std::string& urlPath,
+  FS& fs,
+  const std::string& filePath,
+  const std::string& cache_header) :
+  ResourceNode(urlPath, "GET", &(ESPWebServer::_staticPageHandler), ""),
+  _filePath(filePath),
+  _fileSystem(fs),
+  _cache_header(cache_header)
+{
+}
+
+ESPWebServerStaticNode::~ESPWebServerStaticNode() {
 }
