@@ -150,8 +150,14 @@ void ESPWebServer::on(const String &uri, HTTPMethod method, THandlerFunction fn,
 }
 
 void ESPWebServer::serveStatic(const char* uri, fs::FS& fs, const char* path, const char* cache_header) {
-  HTTPS_LOGE("serveStatic() not implemented");
-  ESPWebServerStaticNode *node = new ESPWebServerStaticNode(this, std::string(uri), fs, std::string(path), std::string(cache_header));
+  std::string wsUri(uri);
+  std::string wsPath(path);
+  if (wsUri[wsUri.length()-1] == '/') {
+    // serving a whole directory
+    wsUri += "*";
+    if (wsPath[wsPath.length()-1] != '/') wsPath += "/";
+  }
+  ESPWebServerStaticNode *node = new ESPWebServerStaticNode(this, wsUri, fs, wsPath, std::string(cache_header?cache_header:""));
   _server->registerNode(node);
 }
 
@@ -473,7 +479,8 @@ void ESPWebServer::_staticPageHandler(HTTPRequest * req, HTTPResponse * res) {
   // xxxjack add index.htm if needed
   // xxxjack prepend filepath
   // Redirect / to /index.html
-  std::string reqFile = req->getRequestString()=="/" ? "/index.html" : req->getRequestString();
+  std::string reqFile;
+  if (!req->getParams()->getPathParameter(0, reqFile)) reqFile = "index.html";
 
   // Try to open the file
   std::string filename = node->_filePath + reqFile;
