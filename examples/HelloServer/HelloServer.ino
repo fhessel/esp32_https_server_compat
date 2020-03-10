@@ -1,7 +1,7 @@
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <ESPmDNS.h>
-#if 0
+#ifdef USE_DEFAULT_WEBSERVER
 #include <WebServer.h>
 #else
 #include <ESPWebServer.hpp>

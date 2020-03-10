@@ -3,7 +3,7 @@
 #include <WiFiClient.h>
 #include <ESPmDNS.h>
 #include <SPIFFS.h>
-#if 0
+#ifdef USE_DEFAULT_WEBSERVER
 #include <WebServer.h>
 typedef WebServer ESPWebServer;
 #else
