@@ -17,12 +17,12 @@
   "repository":
   {
     "type": "git",
-    "url": "https://github.com/jackjansen/esp32_https_server_compat.git"
+    "url": "https://github.com/fhessel/esp32_https_server_compat.git"
   },
   "dependencies": [
     {
       "name": "esp32_https_server",
-      "version": "https://github.com/jackjansen/esp32_https_server.git#bodyparser"
+      "version": "https://github.com/fhessel/esp32_https_server.git"
     }
   ],
   "license": "MIT",
