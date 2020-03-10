@@ -5,6 +5,11 @@
       "name": "Frank Hessel",
       "email": "frank@fhessel.de",
       "maintainer": true
+    },
+    {
+      "name": "Jack Jansen",
+      "email": "Jack.Jansen@cwi.nl",
+      "maintainer": true
     }
   ],
   "keywords": "communication, esp32, http, https, server, ssl, tls, webserver, websockets",
@@ -12,12 +17,12 @@
   "repository":
   {
     "type": "git",
-    "url": "https://github.com/fhessel/esp32_https_server_compat.git"
+    "url": "https://github.com/jackjansen/esp32_https_server_compat.git"
   },
   "dependencies": [
     {
       "name": "esp32_https_server",
-      "version": "https://github.com/jackjansen/esp32_https_server.git#exp-jack-compat"
+      "version": "https://github.com/jackjansen/esp32_https_server.git#bodyparser"
     }
   ],
   "license": "MIT",
