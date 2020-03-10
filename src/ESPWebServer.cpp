@@ -103,7 +103,6 @@ bool ESPWebServer::authenticate(const char * username, const char * password) {
 
 void ESPWebServer::requestAuthentication(HTTPAuthMethod mode, const char* realm, const String& authFailMsg) {
   if (realm == NULL) realm = "Login Required";
-  HTTPS_LOGD("requestAuthentication(%d, %s)\n", mode, realm);
   if (mode == BASIC_AUTH) {
     std::string authArg = "Basic realm=\"";
     authArg += realm;
@@ -215,13 +214,11 @@ String ESPWebServer::arg(String name) {
         buffer[readLength] = 0;
         rv += buffer;
       }
-      HTTPS_LOGD("arg(\"plain\") returns %d bytes", rv.length());
       return rv;
     }
   }
   std::string value;
   _activeParams->getQueryParameter(std::string(name.c_str()), value);
-  HTTPS_LOGD("arg(%s) returns %s", name.c_str(), value.c_str());
   return String(value.c_str());
 }
 
@@ -249,12 +246,11 @@ int ESPWebServer::args() {
 
 bool ESPWebServer::hasArg(String name) {
   bool rv = _activeParams->isQueryParameterSet(std::string(name.c_str()));
-  HTTPS_LOGD("hasArg(%s) returns %d", name.c_str(), (int)rv);
   return rv;
 }
 
 void ESPWebServer::collectHeaders(const char* headerKeys[], const size_t headerKeysCount) {
-  HTTPS_LOGW("collectHeaders() not implemented, but probably not needed");
+  HTTPS_LOGE("collectHeaders() not implemented");
 }
 
 String ESPWebServer::header(String name) {
@@ -367,7 +363,7 @@ void ESPWebServer::setContentLength(const size_t contentLength) {
 
 void ESPWebServer::sendHeader(const String& name, const String& value, bool first) {
   if (first) {
-    HTTPS_LOGW("sendHeader(..., first=true) not implemented");
+    HTTPS_LOGE("sendHeader(..., first=true) not implemented");
   }
   _activeResponse->setHeader(name.c_str(), value.c_str());
 }
