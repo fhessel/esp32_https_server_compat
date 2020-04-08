@@ -31,6 +31,8 @@ public:
 protected:
   ESPWebServerUnderlyingServer _underlyingServer;
   httpsserver::SSLCert _sslCert;
+  uint8_t* keyStore;
+  uint8_t* certStore;
 };
 
 #endif //ESPWEBSERVERSECURE_H
