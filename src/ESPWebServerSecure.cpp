@@ -12,9 +12,7 @@ ESPWebServerSecure::ESPWebServerSecure(IPAddress addr, int port)
 ESPWebServerSecure::ESPWebServerSecure(int port)
 : ESPWebServer(new httpsserver::HTTPSServer(&_sslCert, port, 4)),
   _underlyingServer(this),
-  _sslCert(),
-  keyStore(NULL),
-  certStore(NULL)
+  _sslCert()
 {}
 
 void ESPWebServerSecure::setServerKeyAndCert(const uint8_t *key, int keyLen, const uint8_t *cert, int certLen) {
