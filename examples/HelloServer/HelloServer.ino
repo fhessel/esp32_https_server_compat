@@ -28,9 +28,6 @@ void handleForm() {
   String multi = server.arg("multi");
   Serial.print("multi: ");
   Serial.println(multi);
-  String file = server.arg("file");
-  Serial.print("file: ");
-  Serial.println(file);
   line.toLowerCase();
   multi.toUpperCase();
   String rv;
