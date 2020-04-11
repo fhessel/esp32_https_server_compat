@@ -38,13 +38,13 @@ void handleForm() {
   rv += "Single line:<br><input name='line' value='" + line + "'><br>";
   rv += "Multi line:<br><textarea name='multi' rows='8' cols='40'>" + multi + "</textarea><br>";
   rv += "<input type='submit' value='upper+lower case'>";
-  rv += "</form></body></html>";
+  rv += "</form>";
   rv += "<h2>Form using POST urlencoded</h2>";
   rv += "<form method='POST' action='/form'>";
   rv += "Single line:<br><input name='line' value='" + line + "'><br>";
   rv += "Multi line:<br><textarea name='multi' rows='8' cols='40'>" + multi + "</textarea><br>";
   rv += "<input type='submit' value='upper+lower case'>";
-  rv += "</form></body></html>";
+  rv += "</form>";
   rv += "<h2>Form using POST with multipart</h2>";
   rv += "<form method='POST' enctype=\"multipart/form-data\">";
   rv += "Single line:<br><input name='line' value='" + line + "'><br>";
