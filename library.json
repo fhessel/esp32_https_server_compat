@@ -22,7 +22,7 @@
   "dependencies": [
     {
       "name": "esp32_https_server",
-      "version": "https://github.com/fhessel/esp32_https_server.git"
+      "version": "~1.0.0"
     }
   ],
   "license": "MIT",
