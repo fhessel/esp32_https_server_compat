@@ -5,11 +5,13 @@
 #include <string>
 
 #include <Arduino.h>
+#include <FS.h>
 
 #include <HTTPServer.hpp>
 #include <HTTPRequest.hpp>
 #include <HTTPResponse.hpp>
 #include <HTTPSCallbackFunction.hpp>
+#include <SSLCert.hpp>
 
 #include "HTTP_Method.h"
 
@@ -21,6 +23,9 @@ enum HTTPAuthMethod { BASIC_AUTH, /* DIGEST_AUTH */ };
 #ifndef HTTP_UPLOAD_BUFLEN
 #define HTTP_UPLOAD_BUFLEN 1436
 #endif
+
+#define CONTENT_LENGTH_UNKNOWN ((size_t) -1)
+#define CONTENT_LENGTH_NOT_SET ((size_t) -2)
 
 typedef std::function<void(void)> THandlerFunction;
 
@@ -42,6 +47,9 @@ class ESPWebServerNode;
 
 class ESPWebServer
 {
+  friend class ESPWebServerSecure;
+protected:
+  ESPWebServer(httpsserver::HTTPServer* _server);
 public:
   ESPWebServer(IPAddress addr, int port = 80);
   ESPWebServer(int port = 80);
@@ -103,23 +111,54 @@ public:
 
   static String urlDecode(const String& text);
 
-  //template<typename T> size_t streamFile(T &file, const String& contentType);
+  template<typename T> size_t streamFile(T &file, const String& contentType) {
+    size_t fileSize = file.size();
+    uint8_t buffer[HTTP_UPLOAD_BUFLEN];
+    _prepareStreamFile(fileSize, contentType);
+    size_t didWrite = 0;
+    while (fileSize > 0) {
+      size_t thisRead = file.read(buffer, fileSize > HTTP_UPLOAD_BUFLEN ? HTTP_UPLOAD_BUFLEN : fileSize);
+      if (thisRead == 0) break;
+      _activeResponse->write(buffer, thisRead);
+      didWrite += thisRead;
+      fileSize -= thisRead;
+    }
+    return didWrite;
+  }
 
 protected:
   friend class ESPWebServerNode;
+  friend class ESPWebServerStaticNode;
 
   /** The wrapper function that maps on() calls */
   static void _handlerWrapper(httpsserver::HTTPRequest *req, httpsserver::HTTPResponse *res);
 
+  /** The wrapper function that maps on() calls */
+  static void _staticPageHandler(httpsserver::HTTPRequest *req, httpsserver::HTTPResponse *res);
+
+  /** Add standard headers */
+  void _standardHeaders();
+
+  /** Prepare for streaming a file */
+  void _prepareStreamFile(size_t fileSize, const String& contentType);
+
   /** The backing server instance */
-  httpsserver::HTTPServer _server;
+  httpsserver::HTTPServer* _server;
 
   /** The currently active request */
   httpsserver::HTTPRequest *_activeRequest;
   httpsserver::HTTPResponse *_activeResponse;
+  HTTPUpload *_activeUpload;
+  httpsserver::ResourceParameters *_activeParams;
 
   /** default node */
   ESPWebServerNode *_notFoundNode;
+
+  /** Instance variables for standard headers */
+  size_t _contentLength;
+
+  /** Default file upload handler */
+  THandlerFunction _uploadHandler;
 };
 
 class ESPWebServerNode : public httpsserver::ResourceNode {
@@ -129,6 +168,7 @@ public:
     const std::string &path,
     const std::string &method,
     const THandlerFunction &handler,
+    const THandlerFunction &uploadHandler,
     const std::string &tag = "");
   virtual ~ESPWebServerNode();
 
@@ -136,6 +176,26 @@ protected:
   friend class ESPWebServer;
   ESPWebServer *_wrapper;
   const THandlerFunction _wrappedHandler;
+  const THandlerFunction _wrappedUploadHandler;
+};
+
+class ESPWebServerStaticNode : public httpsserver::ResourceNode {
+public:
+  ESPWebServerStaticNode(
+    ESPWebServer *server,
+    const std::string& urlPath,
+    FS& fs,
+    const std::string& filePath,
+    const std::string& cache_header);
+  virtual ~ESPWebServerStaticNode();
+
+protected:
+  friend class ESPWebServer;
+  ESPWebServer *_wrapper;
+  std::string _filePath;
+  FS& _fileSystem;
+  std::string _cache_header;
+
 };
 
 #endif //ESPWEBSERVER_H

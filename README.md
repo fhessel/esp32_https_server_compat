@@ -1,4 +1,4 @@
-# esp32_https_server_compat
+# esp32\_https\_server\_compat
 
 This library is a wrapper around the [TLS-enabled web server for the ESP32 using the Arduino core](https://github.com/fhessel/esp32_https_server), to make it compatible with the [default Webserver API](https://github.com/espressif/arduino-esp32/tree/master/libraries/WebServer).
 
@@ -8,7 +8,7 @@ The setup depends on the IDE that you're using.
 
 ### Using PlatformIO (recommended)
 
-If you're using PlatformIO, just add esp32_https_server_compat to the library depenendencies in your platform.ini:
+If you're using PlatformIO, just add `esp32\_https\_server\_compat` to the library depenendencies in your `platform.ini`:
 
 ```ini
 [env:myenv]
@@ -37,24 +37,18 @@ void loop() {
 }
 ```
 
-More information and examples can be found in the default WebServer's [repository](https://github.com/espressif/arduino-esp32/tree/master/libraries/WebServer).
+To use the HTTPS server use `<ESPWebServerSecure.hpp>` and `ESPWebServerSecure` in stead of `ESPWebServer`.
+
+More information and examples can be found in the default WebServer's [repository](https://github.com/espressif/arduino-esp32/tree/master/libraries/WebServer). There are two minimal examples (more test programs, really) in the [examples](examples) directory.
 
 ## State of Development
 
-This wrapper is still very WIP.
+The following issues are known:
 
-| Function | State | Comment |
-| -------- | ----- | ------- |
-| Starting and stopping the server | ✅ | (but not tested) |
-| Handling basic requests | ✅ | `on(...)` |
-| Handling 404 | ✅ | `onNotFound(...)` |
-| Providing access to request properties | ✅ | `uri()`, `method()` |
-| Handling file uploads | ❌ | `onFileUpload(...)`, `upload()`, and `on()` with 4 parameters |
-| Handling headers | ❌ | `header()`, `headerName()`, `headers()` etc. |
-| Handling arguments | ❌ | `arg()`, `argName()`, `hasArg()` etc. |
-| Handling forms | ❌ | Needs [esp32_https_server#29](https://github.com/fhessel/esp32_https_server/issues/29) first. |
-| Sending responses | ❌ | `send()` etc. |
-| CORS and cross-origin | ❌ | Needs headers first |
-| Streaming files | ❌ | `streamFile()` |
-| `FS` support | ❌ | |
-| TLS | ❌ | Needs `ESPWebServerSecure` that extends `ESPWebServer` |
+- `serveStatic()` will serve only a single file or a single directory (as opposed to serving a whole subtree in the default WebServer).
+- `serveStatic()` does not implement automatic gzip support.
+- `serveStatic()` knows about only a limited set of mimetypes for file extensions.
+- `authenticate()` and `requestAuthentication()` handle only `Basic` authentication, not `Digest` authentication.
+- `sendHeader()` ignores the `first=true` parameter.
+- `collectHeaders()` is not implemented.
+- Handling of `POST` forms with mimetype `application/x-www-form-urlencoded` is memory-inefficient: the whole POST body is loaded into memory twice.

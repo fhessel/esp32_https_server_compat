@@ -5,6 +5,11 @@
       "name": "Frank Hessel",
       "email": "frank@fhessel.de",
       "maintainer": true
+    },
+    {
+      "name": "Jack Jansen",
+      "email": "Jack.Jansen@cwi.nl",
+      "maintainer": true
     }
   ],
   "keywords": "communication, esp32, http, https, server, ssl, tls, webserver, websockets",
@@ -17,7 +22,7 @@
   "dependencies": [
     {
       "name": "esp32_https_server",
-      "version": "0.3.0"
+      "version": "~1.0.0"
     }
   ],
   "license": "MIT",
