@@ -1,5 +1,5 @@
 {
-  "name": "ESP32 HTTP(S) Webserver (Compatibility Layer)",
+  "name": "esp32_https_server_compat",
   "authors": [
     {
       "name": "Frank Hessel",
@@ -13,7 +13,7 @@
     }
   ],
   "keywords": "communication, esp32, http, https, server, ssl, tls, webserver, websockets",
-  "description": "An Arduino library for an alternative ESP32 HTTP/HTTPS web server implementation",
+  "description": "An Arduino library for an alternative ESP32 HTTP/HTTPS web server implementation. This library is a wrapper around esp32_https_server that provides the same API as the default Webserver library.",
   "repository":
   {
     "type": "git",
@@ -25,8 +25,8 @@
       "version": "~1.0.0"
     }
   ],
-  "license": "MIT",
-  "version": "0.3.0",
+  "license": "LGPL-2.1-only",
+  "version": "1.0.0",
   "frameworks": "arduino",
   "platforms": ["espressif32"]
 }
