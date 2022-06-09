@@ -22,7 +22,7 @@
   "dependencies": [
     {
       "name": "esp32_https_server",
-      "version": "~1.0.0"
+      "version": "https://github.com/jackjansen/esp32_https_server#exp-jack-sha-header"
     }
   ],
   "license": "LGPL-2.1-only",
