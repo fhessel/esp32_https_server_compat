@@ -21,11 +21,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout codebase
-      uses: actions/checkout@f90c7b395dac7c5a277c1a6d93d5057c1cddb74e
+      uses: actions/checkout@v3
     - name: Set up Python
-      uses: actions/setup-python@9ac730844c47e52575257e93faf193c4530bc095
+      uses: actions/setup-python@v4
       with:
-        python-version: '3.8'
+        python-version: '3.10'
     - name: Install PlatformIO
       run: |
         python -m pip install --upgrade pip
