@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - exp-jack-sha-header
   pull_request:
     branches:
       - master
